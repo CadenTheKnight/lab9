@@ -1,4 +1,7 @@
 #include <stdio.h>
+#include <stdlib.h>
+
+int TABLE_SIZE = 15;
 
 // RecordType
 struct RecordType
@@ -11,13 +14,13 @@ struct RecordType
 // Fill out this structure
 struct HashType
 {
-
+	struct RecordType* record;
+	struct RecordType* nextRecord;
 };
-
 // Compute the hash function
 int hash(int x)
 {
-
+	return x % TABLE_SIZE;
 }
 
 // parses input file to an integer array
@@ -79,7 +82,17 @@ void displayRecordsInHash(struct HashType *pHashArray, int hashSz)
 
 	for (i=0;i<hashSz;++i)
 	{
+		struct RecordType* r;
+
 		// if index is occupied with any records, print all
+		while(pHashArray[i].nextRecord != NULL) {
+			printf("hehe%d -> %d, %c, %d", i, r->id, r->name, r->order);
+			if(pHashArray[i].nextRecord != NULL) {
+				r = pHashArray[i].nextRecord;
+			} else {
+				break;
+			}
+		}	
 	}
 }
 
@@ -91,4 +104,35 @@ int main(void)
 	recordSz = parseData("input.txt", &pRecords);
 	printRecords(pRecords, recordSz);
 	// Your hash implementation
+
+	//declare hash table 
+	struct HashType* hashtable = malloc(sizeof(struct HashType) * TABLE_SIZE);
+
+	printf("YEP");
+
+	//add all records to hashtable
+	for(int i = 0; i < recordSz; i++){
+		//generate hash key
+		int key = hash(pRecords[i].order);
+
+		//if no entry at this point, insert record here
+		if(hashtable[key].record != NULL){
+			hashtable[key].record = &pRecords[i];
+			hashtable[key].nextRecord = NULL;
+		} else {
+			//else add as next link in linked list at index key
+			
+			//loop to final link
+			struct RecordType* r;
+			while(hashtable[key].nextRecord != NULL){
+				r = hashtable[key].nextRecord;
+			}
+
+			//add next link
+			hashtable[key].nextRecord = &pRecords[i];
+		}
+	}
+
+	displayRecordsInHash(hashtable, TABLE_SIZE);
+	return 0;
 }
