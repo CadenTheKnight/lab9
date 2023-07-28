@@ -14,6 +14,7 @@ struct RecordType
 // Fill out this structure
 struct HashType
 {
+	int empty;
 	struct RecordType* record;
 	struct RecordType* nextRecord;
 };
@@ -72,6 +73,11 @@ void printRecords(struct RecordType pData[], int dataSz)
 	printf("\n\n");
 }
 
+//helper function for printing a hash-index and a record
+void printRecord(int i, struct RecordType* r){
+	printf("%d -> %d, %c, %d", i, r->id, r->name, r->order);
+}
+
 // display records in the hash structure
 // skip the indices which are free
 // the output will be in the format:
@@ -85,8 +91,8 @@ void displayRecordsInHash(struct HashType *pHashArray, int hashSz)
 		struct RecordType* r;
 
 		// if index is occupied with any records, print all
-		while(pHashArray[i].nextRecord != NULL) {
-			printf("hehe%d -> %d, %c, %d", i, r->id, r->name, r->order);
+		while(pHashArray[i].record != NULL) {
+			printRecord(i, r);
 			if(pHashArray[i].nextRecord != NULL) {
 				r = pHashArray[i].nextRecord;
 			} else {
@@ -108,28 +114,44 @@ int main(void)
 	//declare hash table 
 	struct HashType* hashtable = malloc(sizeof(struct HashType) * TABLE_SIZE);
 
-	printf("YEP");
+	//set all of hashtable to empty
+	for(int i = 0; i < TABLE_SIZE; i++){
+		hashtable[i].empty = 0;
+	}
+
+	//--DEBUG YEP--
+	//printf("YEP");
 
 	//add all records to hashtable
 	for(int i = 0; i < recordSz; i++){
+
 		//generate hash key
 		int key = hash(pRecords[i].order);
+		printf("key generated: %d\n", key);
+
+		printf("hashtable[key].record: %d %c %d", hashtable[key].record->id, 
+			hashtable[key].record->name, hashtable[key].record->order);
 
 		//if no entry at this point, insert record here
-		if(hashtable[key].record != NULL){
+		if(hashtable[key].empty == 0){
+			hashtable[key].empty = 1;
 			hashtable[key].record = &pRecords[i];
 			hashtable[key].nextRecord = NULL;
-		} else {
-			//else add as next link in linked list at index key
-			
+		} 
+		
+		//else add as next link in linked list at index key
+		else {
+					
 			//loop to final link
-			struct RecordType* r;
-			while(hashtable[key].nextRecord != NULL){
-				r = hashtable[key].nextRecord;
+			struct RecordType* r = hashtable[key].nextRecord;
+			while(r->nextRecord != NULL){
+				r = r->nextRecord;
 			}
 
 			//add next link
-			hashtable[key].nextRecord = &pRecords[i];
+			hashtable[key].empty = 1;
+			hashtable[key].record = &pRecords[i];
+			hashtable[key].nextRecord = NULL;
 		}
 	}
 
