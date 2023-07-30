@@ -3,6 +3,13 @@
 
 int TABLE_SIZE = 15;
 
+// LinkedList
+struct RecordLink
+{
+	struct RecordType* record;
+	struct RecordLink* next;	
+};
+
 // RecordType
 struct RecordType
 {
@@ -14,10 +21,9 @@ struct RecordType
 // Fill out this structure
 struct HashType
 {
-	int empty;
-	struct RecordType* record;
-	struct RecordType* nextRecord;
+	struct RecordLink* recordList;
 };
+
 // Compute the hash function
 int hash(int x)
 {
@@ -88,13 +94,18 @@ void displayRecordsInHash(struct HashType *pHashArray, int hashSz)
 
 	for (i=0;i<hashSz;++i)
 	{
-		struct RecordType* r;
+		struct RecordLink* recLink;
+		struct RecordType* rec;
+
+		recLink = pHashArray[i].recordList;
 
 		// if index is occupied with any records, print all
-		while(pHashArray[i].record != NULL) {
-			printRecord(i, r);
-			if(pHashArray[i].nextRecord != NULL) {
-				r = pHashArray[i].nextRecord;
+		while(recLink->record != NULL) {
+			rec = recLink->record;
+			printRecord(i, rec);
+
+			if(recLink->next != NULL) {
+				recLink = recLink->next;
 			} else {
 				break;
 			}
@@ -114,14 +125,6 @@ int main(void)
 	//declare hash table 
 	struct HashType* hashtable = malloc(sizeof(struct HashType) * TABLE_SIZE);
 
-	//set all of hashtable to empty
-	for(int i = 0; i < TABLE_SIZE; i++){
-		hashtable[i].empty = 0;
-	}
-
-	//--DEBUG YEP--
-	//printf("YEP");
-
 	//add all records to hashtable
 	for(int i = 0; i < recordSz; i++){
 
@@ -129,31 +132,33 @@ int main(void)
 		int key = hash(pRecords[i].order);
 		printf("key generated: %d\n", key);
 
-		printf("hashtable[key].record: %d %c %d", hashtable[key].record->id, 
-			hashtable[key].record->name, hashtable[key].record->order);
 
 		//if no entry at this point, insert record here
-		if(hashtable[key].empty == 0){
-			hashtable[key].empty = 1;
-			hashtable[key].record = &pRecords[i];
-			hashtable[key].nextRecord = NULL;
+		if(hashtable[key].recordList->record == NULL){
+
+			hashtable[key].recordList = malloc(sizeof(struct RecordLink));
+			hashtable[key].recordList->record = &pRecords[i];
+			hashtable[key].recordList->next = NULL;
 		} 
 		
 		//else add as next link in linked list at index key
 		else {
 					
 			//loop to final link
-			struct RecordType* r = hashtable[key].nextRecord;
-			while(r->nextRecord != NULL){
-				r = r->nextRecord;
+			struct RecordLink* r = hashtable[key].recordList;
+			while(r->next != NULL){
+				r = r->next;
+				printf("looping to last link\n");
 			}
 
 			//add next link
-			hashtable[key].empty = 1;
-			hashtable[key].record = &pRecords[i];
-			hashtable[key].nextRecord = NULL;
+			r = malloc(sizeof(struct RecordLink));
+			r->record = &pRecords[i];
+			r->next = NULL;
 		}
 	}
+
+	printf("DEBUG PENIS\n");
 
 	displayRecordsInHash(hashtable, TABLE_SIZE);
 	return 0;
