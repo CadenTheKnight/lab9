@@ -100,7 +100,7 @@ void displayRecordsInHash(struct HashType *pHashArray, int hashSz)
 		recLink = pHashArray[i].recordList;
 
 		// if index is occupied with any records, print all
-		while(recLink->record != NULL) {
+		while(recLink != NULL) {
 			rec = recLink->record;
 			printRecord(i, rec);
 
@@ -125,17 +125,21 @@ int main(void)
 	//declare hash table 
 	struct HashType* hashtable = malloc(sizeof(struct HashType) * TABLE_SIZE);
 
+	//make all links NULL to start
+	for(int i = 0; i < TABLE_SIZE; i++){
+		hashtable[i].recordList = malloc(sizeof(struct RecordLink));
+		hashtable[i].recordList->record = NULL;
+	}
+
 	//add all records to hashtable
 	for(int i = 0; i < recordSz; i++){
 
 		//generate hash key
 		int key = hash(pRecords[i].order);
-		printf("key generated: %d\n", key);
-
+		//printf("key generated: %d\n", key);
 
 		//if no entry at this point, insert record here
 		if(hashtable[key].recordList->record == NULL){
-
 			hashtable[key].recordList = malloc(sizeof(struct RecordLink));
 			hashtable[key].recordList->record = &pRecords[i];
 			hashtable[key].recordList->next = NULL;
@@ -148,7 +152,7 @@ int main(void)
 			struct RecordLink* r = hashtable[key].recordList;
 			while(r->next != NULL){
 				r = r->next;
-				printf("looping to last link\n");
+				//printf("looping to last link\n");
 			}
 
 			//add next link
@@ -157,9 +161,6 @@ int main(void)
 			r->next = NULL;
 		}
 	}
-
-	printf("DEBUG PENIS\n");
-
 	displayRecordsInHash(hashtable, TABLE_SIZE);
 	return 0;
 }
